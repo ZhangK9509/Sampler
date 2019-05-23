@@ -1,0 +1,44 @@
+---
+# Settings for Kitti
+#
+# The tree of dataset directory is available as follows for reference.
+#
+# Kitti
+# ├── training
+# │   ├── calib
+# │   ├── image_2
+# │   ├── label_2
+# │   ├── planes
+# │   └── velodyne
+# ├── train.txt
+# ├── trainval.txt
+# └── val.txt
+#
+# src_dir: The directory of dataset.
+# src_split_files_dir: The directory of split files.
+# valid_splits: The list of valid split such as `train`, `val` or `test`. The
+#   valid values are `train`, `val` and `test`. Split files record the ID 
+#   numbers/indices of datas. And the extension of them is `txt`. The path of 
+#   them are `src_split_files_dir/valid_split.txt`. `trainval.txt` will be
+#   created if both `train.txt` and `val.txt` are existed in
+#   `src_split_files_dir`.
+# targets: A dictionary. The key is the relative path of target directory so
+#   that the full path is `dataset_dir/key`. The value is the extension of the
+#   target file in the target directory. The files with other extension will be
+#   ignored.
+
+src_dir: /home/painter/Workspace/Datasets/Kitti/training
+
+src_split_files_dir: /home/painter/Workspace/Datasets/Kitti
+valid_splits:
+  # NOTE: The values must be limited in `train`, `val` and `test`.
+  - train
+  - val
+
+targets:
+  calib: txt
+  image_2: png
+  label_2: txt
+  planes: txt
+  velodyne: bin
+...
