@@ -16,19 +16,19 @@ pip install -r requirements.txt
 ### Sampling
 Command is as follows. Use `-h` for more help.
 ```
-python sampler.py <dataset> <dest_dir> <splits> <sample_sizes> [method]
+python sampler.py <dataset> <dest_dir> <dest_split_files_dir> <splits> <sample_sizes> [method]
 ```
 For an example, to take a sample of dataset `abc`, a YAML file named `abc.yaml` is essential. If data for training is wanted, use command as follows and data will be copied to the destination directory with a file named `train.txt` which records data's ID numbers.The sample size is `10`.
 ```
-python sampler.py abc ~/Workspace/Samp/ABC train 10
+python sampler.py abc ~/Workspace/Samp/ABC/train ~/Workspace/Samp/ABC train 10
 ```
 If data for training and validating is wanted, use command as follows and data will be copied to the destination directory with files `train.txt`, `val.txt` and `trainval.txt`. The sample sizes are `10` and `4`.
 ```
-python sampler.py aBc ~/Workspace/Samp/ABC train,val 10,4
+python sampler.py aBc ~/Workspace/Samp/ABC/train ~/Workspace/Samp/ABC train,val 10,4
 ```
 Default sampling method is random sampling. In addition, sequential sampling is available.
 ```
-python sampler.py ABC ~/Workspace/Samp train 10 --method=SEQUENTIAL
+python sampler.py ABC ~/Workspace/Samp/ABC/train ~/Workspace/Samp/ABC train 10 --method=SEQUENTIAL
 ```
 Multiple samplings are allowed. Data will be merged. And the total number could be less than accumulation because only one data will be retained if two are the same.
 ## Contributing to the project

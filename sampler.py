@@ -40,6 +40,10 @@ def update_cfg():
         "dest_dir", type=str,
         help="The destination directory where saves samples. The directory will be created, if does not exist.")
     parser.add_argument(
+        "dest_split_files_dir", type=str,
+        help="The directory of destination split files where saves split files. The directory will be created, if does not exist."
+    )
+    parser.add_argument(
         "splits", type=str,
         help="Split must be included in `train`, `val` and `test`. If more splits are needed, use `,` (in English) to connect them, such as `train&val&test`. `trainval` is equivalent to `train,val`. Both uppercase and lowercase are valid.")
     parser.add_argument(
@@ -67,7 +71,6 @@ def update_cfg():
     valid_splits = config["valid_splits"]
     targets = config["targets"]
 
-    # Get splits and sample sizes.
     splits = [split.strip() for split in args.splits.split(',')]
     sample_sizes = [int(sample_size.strip())
         for sample_size in args.sample_sizes.split(',')]
@@ -82,10 +85,12 @@ def update_cfg():
 
     # Update `cfg`.
     dest_dir = os.path.abspath(args.dest_dir)
+    dest_split_files_dir = os.path.abspath(args.dest_split_files_dir)
     kwargs = {
         "src_dir": src_dir,
-        "dest_dir": dest_dir,
         "src_split_files_dir": src_split_files_dir,
+        "dest_dir": dest_dir,
+        "dest_split_files_dir": dest_split_files_dir,
         "splits": splits,
         "targets": targets,
         "sample_sizes": sample_sizes,
@@ -96,8 +101,9 @@ def update_cfg():
 
 def get_splits_sample_ids():
     splits_sample_ids = {}
-    for split, sample_size in zip(cfg.splits, cfg.sample_sizes):
-        src_split_file_path = os.path.join(cfg.src_split_files_dir, split + ".txt")
+    for split, sample_size in zip(cfg.get_splits(), cfg.get_sample_sizes()):
+        src_split_file_path = os.path.join(
+            cfg.get_src_split_files_dir(), split + ".txt")
         with open(src_split_file_path, 'r') as f:
             ids = [int(idx.strip()) for idx in f.readlines()]
         
@@ -106,12 +112,13 @@ def get_splits_sample_ids():
                 "The Sample size `{}` of `{}` is out of maximun.".format(
                     sample_size, split))
 
-        if cfg.method == "RANDOM":
+        method = cfg.get_method()
+        if method == "RANDOM":
             sample_ids = random.sample(ids, sample_size)
-        elif cfg.method == "SEQUENTIAL":
+        elif method == "SEQUENTIAL":
             sample_ids = ids[: sample_size]
         else:
-            raise Exception("Illegal method: " + cfg.method)
+            raise Exception("Illegal method: " + method)
 
         splits_sample_ids[split] = sample_ids
     
@@ -119,11 +126,13 @@ def get_splits_sample_ids():
 
 
 def copy_targets(split, sample_ids):
-    for target_dir, target_ext in cfg.targets.items():
+    src_dir = cfg.get_src_dir()
+    dest_dir = cfg.get_dest_dir()
+    for target_dir, target_ext in cfg.get_targets().items():
         src_target_file_path = os.path.join(
-            cfg.src_dir, target_dir, "{:0>6}." + target_ext)
+            src_dir, target_dir, "{:0>6}." + target_ext)
 
-        dest_target_file_dir = os.path.join(cfg.dest_dir, target_dir)
+        dest_target_file_dir = os.path.join(dest_dir, target_dir)
         if not os.path.exists(dest_target_file_dir):
             os.makedirs(dest_target_file_dir)
 
@@ -140,7 +149,8 @@ def copy_targets(split, sample_ids):
 
    
 def update_split_file(split, sample_ids):
-    dest_split_file_path = os.path.join(cfg.dest_dir, split + ".txt")
+    dest_split_file_path = os.path.join(
+        cfg.get_dest_split_files_dir(), split + ".txt")
 
     if os.path.exists(dest_split_file_path):
         print("Already exist destination file: {}.".format(
@@ -163,8 +173,9 @@ def update_split_file(split, sample_ids):
 
 
 def update_trainval():
-    dest_train_split_file_path = os.path.join(cfg.dest_dir, "train.txt")
-    dest_val_split_file_path = os.path.join(cfg.dest_dir, "val.txt")
+    dest_split_files_dir = cfg.get_dest_split_files_dir()
+    dest_train_split_file_path = os.path.join(dest_split_files_dir, "train.txt")
+    dest_val_split_file_path = os.path.join(dest_split_files_dir, "val.txt")
     if os.path.exists(dest_train_split_file_path) and \
         os.path.exists(dest_val_split_file_path):
         ids = []
@@ -177,7 +188,7 @@ def update_trainval():
         ids = ["{:0>6}".format(idx) for idx in ids]
         ids_str = "\n".join(ids)
         dest_trainval_split_file_path = os.path.join(
-            cfg.dest_dir, "trainval.txt")
+            dest_split_files_dir, "trainval.txt")
         with open(dest_trainval_split_file_path, 'w') as f:
             f.write(ids_str)
 
@@ -188,7 +199,6 @@ def update_trainval():
         
 def main():
     update_cfg()
-
     splits_sample_ids = get_splits_sample_ids()
 
     maybe_trainval = False

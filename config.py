@@ -24,18 +24,44 @@
 class Config(object):
     def __init__(self):
         super(Config, self).__init__()
-        self.src_dir = ""
-        self.dest_dir = ""
-        self.src_split_files_dir = ""
-        self.splits = []
-        self.targets = {}
-        self.sample_sizes = []
-        self.method = "RANDOM"
+        self.__src_dir = ""
+        self.__src_split_files_dir = ""
+        self.__dest_dir = ""
+        self.__dest_split_files_dir = ""
+        self.__splits = []
+        self.__targets = {}
+        self.__sample_sizes = []
+        self.__method = "RANDOM"
 
+    def get_src_dir(self):
+        return self.__src_dir
+
+    def get_src_split_files_dir(self):
+        return self.__src_split_files_dir
+    
+    def get_dest_dir(self):
+        return self.__dest_dir
+
+    def get_dest_split_files_dir(self):
+        return self.__dest_split_files_dir
+
+    def get_splits(self):
+        return self.__splits
+
+    def get_targets(self):
+        return self.__targets
+
+    def get_sample_sizes(self):
+        return self.__sample_sizes
+
+    def get_method(self):
+        return self.__method
+        
     def update(self, *new_cfg):
         state_dict = vars(self)
         for kwargs in new_cfg:
             for k, v in kwargs.items():
+                k = "_{}__{}".format(self.__class__.__name__, k)
                 if k not in state_dict:
                     continue
                 setattr(self, k, v)
